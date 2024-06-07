@@ -1,0 +1,16 @@
+data_sources:
+  gold_prices: "GC=F"  # Yahoo Finance ticker for gold futures
+  economic_indicators:
+    fred:
+      api_key: "your_fred_api_key"
+      series_ids:  # FRED series IDs for the desired economic indicators
+        - "DGS10"  # 10-Year Treasury Constant Maturity Rate
+        - "CPIAUCSL"  # Consumer Price Index for All Urban Consumers
+        - "DEXUSEU"  # U.S. / Euro Foreign Exchange Rate
+database_path: "data/processed/gold_futures.db"
+model_config:
+  model_type: "RandomForest"
+  hyperparameters:
+    n_estimators: 100
+    max_depth: 10
+openai_api_key: "your_openai_api_key"

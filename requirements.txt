@@ -1,0 +1,7 @@
+yfinance
+numpy
+sqlalchemy
+openai
+mage-ai
+pyfinance
+tensorflow
