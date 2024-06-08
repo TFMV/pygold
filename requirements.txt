@@ -201,3 +201,4 @@ xlrd==2.0.1
 xmltodict==0.13.0
 yarl==1.9.4
 yfinance==0.2.40
+xgboost
