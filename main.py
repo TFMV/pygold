@@ -19,7 +19,7 @@ def apply_fft(prices):
     return np.vstack((np.real(fft_vals), np.imag(fft_vals))).T
 
 # Fetch gold futures data
-gold_data = yf.download('GC=F', start='2000-01-01', end='2024-05-31')
+gold_data = yf.download('GC=F', start='2000-01-01', end=None)
 
 # Calculate EMA with a span of 10 days (or any other period you find suitable)
 gold_data['EMA'] = calculate_ema(gold_data['Close'], span=10)
