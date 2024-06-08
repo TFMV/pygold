@@ -9,7 +9,9 @@ PyGold is a project that predicts the price of gold futures using historical dat
 - Fetch daily gold futures data from Yahoo Finance up to the current date.
 - Preprocess the data using MinMaxScaler.
 - Use a CNN-LSTM hybrid model for predicting future gold prices.
+- Incorporate Exponential Moving Average (EMA) and Fast Fourier Transform (FFT) as additional features.
 - Evaluate the model using a test dataset.
+- Calculate Mean Absolute Error (MAE) for accuracy assessment.
 
 ## Author
 
