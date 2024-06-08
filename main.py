@@ -8,40 +8,55 @@ from keras.layers import Dense, Dropout, LSTM, Conv1D, MaxPooling1D
 from keras.losses import mean_squared_error
 from keras.optimizers import Adam
 
+# Function to calculate EMA
+def calculate_ema(prices, span):
+    return prices.ewm(span=span, adjust=False).mean()
+
 # Fetch gold futures data
 gold_data = yf.download('GC=F', start='2000-01-01', end='2024-05-31')
 
+# Calculate EMA with a span of 10 days (or any other period you find suitable)
+gold_data['EMA'] = calculate_ema(gold_data['Close'], span=10)
+
+# Drop NaN values that may have been introduced by the EMA calculation
+gold_data.dropna(inplace=True)
+
 # Preprocess the data
 gold_prices = gold_data['Close'].values.reshape(-1, 1)
+ema_prices = gold_data['EMA'].values.reshape(-1, 1)
+
 scaler = MinMaxScaler(feature_range=(0, 1))
-scaled_prices = scaler.fit_transform(gold_prices)
+scaled_gold_prices = scaler.fit_transform(gold_prices)
+scaled_ema_prices = scaler.fit_transform(ema_prices)
+
+# Combine gold prices and EMA as features
+scaled_features = np.hstack((scaled_gold_prices, scaled_ema_prices))
 
 def create_dataset(data, time_step=1):
     X, Y = [], []
     for i in range(len(data) - time_step - 1):
-        a = data[i:(i + time_step), 0]
-        X.append(a)
-        Y.append(data[i + time_step, 0])
+        X.append(data[i:(i + time_step), :])
+        Y.append(data[i + time_step, 0])  # Predicting the gold price
     return np.array(X), np.array(Y)
 
 # Define time step
 time_step = 100
 
 # Split data into training and testing sets
-train_size = int(len(scaled_prices) * 0.8)
-test_size = len(scaled_prices) - train_size
-train_data, test_data = scaled_prices[:train_size, :], scaled_prices[train_size:, :]
+train_size = int(len(scaled_features) * 0.8)
+test_size = len(scaled_features) - train_size
+train_data, test_data = scaled_features[:train_size, :], scaled_features[train_size:, :]
 
 X_train, y_train = create_dataset(train_data, time_step)
 X_test, y_test = create_dataset(test_data, time_step)
 
 # Reshape input data to be [samples, time steps, features]
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
-X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
+X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2])
+X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2])
 
 # Build the CNN-LSTM model
 model = Sequential()
-model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(time_step, 1)))
+model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(time_step, X_train.shape[2])))
 model.add(MaxPooling1D(pool_size=2))
 model.add(LSTM(units=50, return_sequences=True))
 model.add(Dropout(0.2))
