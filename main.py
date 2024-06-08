@@ -7,10 +7,16 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM, Conv1D, MaxPooling1D
 from keras.losses import mean_squared_error
 from keras.optimizers import Adam
+from scipy.fft import fft
 
 # Function to calculate EMA
 def calculate_ema(prices, span):
     return prices.ewm(span=span, adjust=False).mean()
+
+# Function to apply FFT and extract real and imaginary parts
+def apply_fft(prices):
+    fft_vals = fft(prices)
+    return np.vstack((np.real(fft_vals), np.imag(fft_vals))).T
 
 # Fetch gold futures data
 gold_data = yf.download('GC=F', start='2000-01-01', end='2024-05-31')
@@ -25,12 +31,19 @@ gold_data.dropna(inplace=True)
 gold_prices = gold_data['Close'].values.reshape(-1, 1)
 ema_prices = gold_data['EMA'].values.reshape(-1, 1)
 
-scaler = MinMaxScaler(feature_range=(0, 1))
-scaled_gold_prices = scaler.fit_transform(gold_prices)
-scaled_ema_prices = scaler.fit_transform(ema_prices)
+# Apply FFT
+fft_features = apply_fft(gold_prices.flatten())
 
-# Combine gold prices and EMA as features
-scaled_features = np.hstack((scaled_gold_prices, scaled_ema_prices))
+scaler_gold_prices = MinMaxScaler(feature_range=(0, 1))
+scaler_ema_prices = MinMaxScaler(feature_range=(0, 1))
+scaler_fft_features = MinMaxScaler(feature_range=(0, 1))
+
+scaled_gold_prices = scaler_gold_prices.fit_transform(gold_prices)
+scaled_ema_prices = scaler_ema_prices.fit_transform(ema_prices)
+scaled_fft_features = scaler_fft_features.fit_transform(fft_features)
+
+# Combine gold prices, EMA, and FFT features as inputs
+scaled_features = np.hstack((scaled_gold_prices, scaled_ema_prices, scaled_fft_features))
 
 def create_dataset(data, time_step=1):
     X, Y = [], []
@@ -74,13 +87,13 @@ model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y
 predictions = model.predict(X_test)
 
 # Inverse transform predictions and actual values to original scale
-predictions = scaler.inverse_transform(predictions.reshape(-1, 1))
-y_test = scaler.inverse_transform(y_test.reshape(-1, 1))
+predictions_gold = scaler_gold_prices.inverse_transform(predictions.reshape(-1, 1))
+y_test_gold = scaler_gold_prices.inverse_transform(y_test.reshape(-1, 1))
 
 # Calculate MAE
-mae = mean_absolute_error(y_test, predictions)
+mae = mean_absolute_error(y_test_gold, predictions_gold)
 
 # Print results
-print("Predicted Prices:", predictions.flatten())
-print("Actual Prices:", y_test.flatten())
+print("Predicted Prices:", predictions_gold.flatten())
+print("Actual Prices:", y_test_gold.flatten())
 print(f"Mean Absolute Error (MAE): {mae:.4f}")
