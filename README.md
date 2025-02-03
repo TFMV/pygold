@@ -1,18 +1,26 @@
 # pygold
 
-PyGold is a project that predicts the price of gold futures using historical data from Yahoo Finance and a Convolutional Neural Network (CNN) combined with Long Short-Term Memory (LSTM) networks. This project demonstrates the application of deep learning techniques to financial time series forecasting.
+Advanced Time Series Prediction with Transformers & CNN-LSTM
+
+## Overview
+
+Pygold is a deep learning-based framework for time series forecasting, integrating state-of-the-art machine learning techniques. It leverages an ensemble approach combining Transformer models and CNN-LSTM architectures for highly accurate financial time series predictions.
 
 ![pygold](assets/pygold.webp)
 
 ## Features
 
-- Fetch daily gold futures data from Yahoo Finance up to the current date.
-- Preprocess the data using MinMaxScaler.
-- Use a CNN-LSTM hybrid model for predicting future gold prices.
-- Incorporate Exponential Moving Average (EMA) and Fast Fourier Transform (FFT) as additional features.
-- Evaluate the model using a test dataset.
-- Calculate Mean Absolute Error (MAE) for accuracy assessment.
+- Advanced Feature Engineering: Incorporates log transformations, EMA, volatility, and wavelet transforms.
+- Sliding Window Dataset: Efficient data preparation for sequential modeling.
+- Custom Asymmetric Loss Function: Penalizes underestimation more than overestimation.
+- Hybrid Model Architecture: Combines Transformer encoders with CNN-LSTM networks.
+- Hyperparameter Optimization: Uses Optuna for tuning key parameters.
+- Performance Metrics: Achieved a final test MAE of 0.1012.
 
 ## Author
 
-Thomas F McGeehan V
+[Thomas F McGeehan V](https://github.com/TFMV)
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE file](LICENSE) for details.
